@@ -1,6 +1,6 @@
 extern crate sdl2;
+extern crate cgmath;
 
-mod vec3;
 mod timer;
 
 use self::sdl2::event::Event;
@@ -27,11 +27,11 @@ impl RectShape {
         Ok(())
     }
 
-    fn movement(&mut self, movement: vec3::Vec3) {
+    fn movement(&mut self, movement: cgmath::Vector2<i32>) {
         let x = self.rect.x();
         let y = self.rect.y();
-        self.rect.set_x(x + movement.x as i32);
-        self.rect.set_y(y + movement.y as i32);
+        self.rect.set_x(x + movement.x);
+        self.rect.set_y(y + movement.y);
     }
 }
 
@@ -110,10 +110,10 @@ impl Game {
     }
 
     fn update(&mut self, delta: u64) {
-        let mut movement = vec3::Vec3::default();
-        movement.y += (self.player.down as i32 - self.player.up as i32) as f64;
-        movement.x += (self.player.right as i32 - self.player.left as i32) as f64;
-        self.player.movement(delta as f64 * movement);
+        let mut movement = cgmath::Vector2::new(0 as i32, 0);
+        movement.y += self.player.down as i32 - self.player.up as i32;
+        movement.x += self.player.right as i32 - self.player.left as i32;
+        self.player.movement(delta as i32 * movement);
     }
 
     fn render(&mut self) {
