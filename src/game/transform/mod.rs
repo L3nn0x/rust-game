@@ -27,6 +27,10 @@ impl Transform {
         }
     }
 
+    pub fn scaling_with_center(x: f64, y: f64, x_center: i32, y_center: i32) -> Transform {
+        Transform::translation(-x_center, -y_center).scale(x, y).translate(x_center, y_center)
+    }
+
     pub fn translate(self, x: i32, y: i32) -> Transform {
         self.combine(Transform::translation(x, y))
     }
@@ -37,6 +41,10 @@ impl Transform {
 
     pub fn scale(self, x: f64, y: f64) -> Transform {
         self.combine(Transform::scaling(x, y))
+    }
+
+    pub fn scale_with_center(self, x: f64, y: f64, x_center: i32, y_center: i32) -> Transform {
+        self.translate(-x_center, -y_center).scale(x, y).translate(x_center, y_center)
     }
 
     pub fn combine(self, other: Transform) -> Transform {
