@@ -1,6 +1,9 @@
 extern crate cgmath;
 extern crate sdl2;
 
+mod rect;
+mod point;
+
 pub struct Transform(cgmath::Matrix3<f64>);
 
 impl Transform {
@@ -47,36 +50,42 @@ impl Transform {
         Transform(self.0 * other.0)
     }
 
-    pub fn transform_point(&self, point: sdl2::rect::Point) -> sdl2::rect::Point {
-        let p = cgmath::Vector3{x: point.x() as f64, y: point.y() as f64, z: 1.};
+    pub fn transform_point(&self, point: point::Point) -> point::Point {
+        let p = cgmath::Vector3{x: point.x as f64, y: point.y as f64, z: 1.};
         let p = self.0 * p;
-        sdl2::rect::Point::new(p.x as i32, p.y as i32)
+        point::Point::new(p.x as i32, p.y as i32)
     }
 
-    pub fn transform_rect(&self, rect: sdl2::rect::Rect) -> sdl2::rect::Rect {
-        use super::sdl2::rect::Point;
-        let p = (self.transform_point(Point::new(rect.x(), rect.y())),
-                 self.transform_point(Point::new(rect.x(), rect.y() + rect.height() as i32)),
-                 self.transform_point(Point::new(rect.x() + rect.width() as i32, rect.y())),
-                 self.transform_point(Point::new(rect.x() + rect.width() as i32, rect.y() + rect.height() as i32)));
+    pub fn transform_rect(&self, rect: rect::Rect) -> rect::Rect {
+        use self::point::Point;
+        let p = (self.transform_point(Point::new(rect.left, rect.top)),
+                 self.transform_point(Point::new(rect.left, rect.top + rect.height)),
+                 self.transform_point(Point::new(rect.left + rect.width, rect.top)),
+                 self.transform_point(Point::new(rect.left + rect.width, rect.top + rect.height)));
 
         // compute the bounding box of the transformed points
-        let mut left = p.0.x();
-        let mut top = p.0.y();
-        let mut right = p.0.x();
-        let mut bottom = p.0.y();
+        let mut left = p.0.x;
+        let mut top = p.0.y;
+        let mut right = p.0.x;
+        let mut bottom = p.0.y;
         for point in &[p.0, p.1, p.2, p.3] {
-            if point.x() < left {
-                left = point.x();
-            } else if point.x() > right {
-                right = point.x();
+            if point.x < left {
+                left = point.x;
+            } else if point.x > right {
+                right = point.x;
             }
-            if point.y() < top {
-                top = point.y();
-            } else if point.y() > bottom {
-                bottom = point.y();
+            if point.y < top {
+                top = point.y;
+            } else if point.y > bottom {
+                bottom = point.y;
             }
         }
-        sdl2::rect::Rect::new(left, top, (right - left) as u32, (bottom - top) as u32)
+        rect::Rect::new(left, top, right - left, bottom - top)
+    }
+}
+
+impl From<point::Point> for Transform {
+    fn from(p: point::Point) -> Self {
+        Transform::from_translation(p.x, p.y)
     }
 }
