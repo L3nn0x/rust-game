@@ -6,6 +6,12 @@ pub struct Transform {
 }
 
 impl Transform {
+    pub fn identity() -> Transform {
+        Transform {
+            mat: cgmath::Matrix3::new(1., 0., 0., 0., 1., 0., 0., 0., 1.)
+        }
+    }
+
     pub fn translation(x: i32, y: i32) -> Transform {
         let mat = cgmath::Matrix3::new(1., 0., 0., 0., 1., 0., x as f64, y as f64, 1.);
         Transform {
