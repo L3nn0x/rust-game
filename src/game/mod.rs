@@ -1,18 +1,22 @@
 extern crate sdl2;
+extern crate specs;
 
 mod utils;
+mod ecs;
 use self::utils::timer;
 
 const MS_PER_FRAME: u64 = ((1. / 60.) * 1000.) as u64;
 
-pub struct Game {
+pub struct Game<'a, 'b> {
     sdl_context: sdl2::Sdl,
     canvas: sdl2::render::WindowCanvas,
     is_open: bool,
+    world: specs::World,
+    dispatcher: specs::Dispatcher<'a, 'b>
 }
 
-impl Game {
-    pub fn new() -> Game {
+impl<'a, 'b> Game<'a, 'b> {
+    pub fn new() -> Game<'a, 'b> {
         let ctx = sdl2::init().unwrap();
         let video_ctx = ctx.video().unwrap();
 
@@ -29,6 +33,8 @@ impl Game {
             sdl_context: ctx,
             canvas: canvas,
             is_open: true,
+            world: ecs::build_world(),
+            dispatcher: ecs::build_dispatcher()
         }
     }
 
@@ -72,7 +78,12 @@ impl Game {
         }
     }
 
-    fn update(&mut self, _delta: u64) {
+    fn update(&mut self, delta: u64) {
+        {
+            let mut d = self.world.write_resource::<ecs::DeltaTime>();
+            *d = ecs::DeltaTime(delta);
+        }
+        self.dispatcher.dispatch(&mut self.world.res);
     }
 
     fn render(&mut self) {
