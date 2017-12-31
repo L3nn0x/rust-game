@@ -1,3 +1,4 @@
+#![feature(fn_traits)]
 mod game;
 
 fn main() {

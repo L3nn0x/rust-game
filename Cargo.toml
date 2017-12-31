@@ -5,5 +5,10 @@ authors = ["drago"]
 build = "build.rs"
 
 [dependencies]
-sdl2 = "*"
 cgmath = "*"
+specs = "*"
+
+[dependencies.sdl2]
+version = "*"
+default-features = false
+features = ["image"]

@@ -1,45 +1,14 @@
 extern crate sdl2;
-extern crate cgmath;
 
-mod timer;
+mod utils;
+use self::utils::timer;
 
-use self::sdl2::event::Event;
-use self::sdl2::keyboard::Keycode;
-use self::sdl2::pixels::Color;
-
-const TIME_PER_FRAME: u64 = 16;
-
-struct RectShape {
-    rect: sdl2::rect::Rect,
-    color: Color,
-    up: bool,
-    down: bool,
-    left: bool,
-    right: bool
-}
-
-impl RectShape {
-    fn display(&self, canvas: &mut sdl2::render::WindowCanvas) -> Result<(), String> {
-        let color = canvas.draw_color();
-        canvas.set_draw_color(self.color.clone());
-        canvas.fill_rect(self.rect.clone())?;
-        canvas.set_draw_color(color);
-        Ok(())
-    }
-
-    fn movement(&mut self, movement: cgmath::Vector2<i32>) {
-        let x = self.rect.x();
-        let y = self.rect.y();
-        self.rect.set_x(x + movement.x);
-        self.rect.set_y(y + movement.y);
-    }
-}
+const MS_PER_FRAME: u64 = ((1. / 60.) * 1000.) as u64;
 
 pub struct Game {
     sdl_context: sdl2::Sdl,
     canvas: sdl2::render::WindowCanvas,
     is_open: bool,
-    player: RectShape
 }
 
 impl Game {
@@ -54,20 +23,12 @@ impl Game {
         
         let mut canvas = window.into_canvas().present_vsync().build().unwrap();
 
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
+        canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
 
         Game {
             sdl_context: ctx,
             canvas: canvas,
             is_open: true,
-            player: RectShape {
-                rect: sdl2::rect::Rect::new(10, 10, 10, 10),
-                color: Color::RGB(255, 0, 0),
-                up: false,
-                down: false,
-                left: false,
-                right: false
-            }
         }
     }
 
@@ -77,16 +38,18 @@ impl Game {
         while self.is_open {
             time_since_last_update += timer.restart();
             self.process_events();
-            while time_since_last_update > TIME_PER_FRAME {
-                time_since_last_update -= TIME_PER_FRAME;
+            while time_since_last_update > MS_PER_FRAME {
+                time_since_last_update -= MS_PER_FRAME;
                 self.process_events();
-                self.update(TIME_PER_FRAME);
+                self.update(MS_PER_FRAME);
             }
             self.render();
         }
     }
 
     fn process_events(&mut self) {
+        use self::sdl2::event::Event;
+        use self::sdl2::keyboard::Keycode;
         let mut event_pump = self.sdl_context.event_pump().unwrap();
         for event in event_pump.poll_iter() {
             match event {
@@ -98,27 +61,22 @@ impl Game {
         }
     }
 
-    fn handle_player_input(&mut self, key: sdl2::keyboard::Keycode, pressed: bool) {
+    fn handle_player_input(&mut self, key: sdl2::keyboard::Keycode, _pressed: bool) {
         use self::sdl2::keyboard::Keycode;
         match key {
-            Keycode::Z => self.player.up = pressed,
-            Keycode::Q => self.player.left = pressed,
-            Keycode::S => self.player.down = pressed,
-            Keycode::D => self.player.right = pressed,
+            Keycode::Z => {},
+            Keycode::Q => {},
+            Keycode::S => {},
+            Keycode::D => {},
             _ => {}
         }
     }
 
-    fn update(&mut self, delta: u64) {
-        let mut movement = cgmath::Vector2::new(0 as i32, 0);
-        movement.y += self.player.down as i32 - self.player.up as i32;
-        movement.x += self.player.right as i32 - self.player.left as i32;
-        self.player.movement(delta as i32 * movement);
+    fn update(&mut self, _delta: u64) {
     }
 
     fn render(&mut self) {
         self.canvas.clear();
-        let _ = self.player.display(&mut self.canvas);
         self.canvas.present();
     }
 }
