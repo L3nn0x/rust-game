@@ -7,7 +7,6 @@ build = "build.rs"
 [dependencies]
 cgmath = "*"
 specs = "*"
-specs-derive = "*"
 
 [dependencies.sdl2]
 version = "*"

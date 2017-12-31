@@ -84,6 +84,7 @@ impl<'a, 'b> Game<'a, 'b> {
             *d = ecs::DeltaTime(delta);
         }
         self.dispatcher.dispatch(&mut self.world.res);
+        self.world.maintain();
     }
 
     fn render(&mut self) {
