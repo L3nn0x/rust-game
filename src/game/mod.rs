@@ -29,11 +29,17 @@ impl<'a, 'b> Game<'a, 'b> {
 
         canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
 
+        let mut world = ecs::build_world();
+
+        let _player = ecs::create_player(&mut world);
+
+        world.maintain();
+
         Game {
             sdl_context: ctx,
             canvas: canvas,
             is_open: true,
-            world: ecs::build_world(),
+            world: world,
             dispatcher: ecs::build_dispatcher()
         }
     }
@@ -89,6 +95,7 @@ impl<'a, 'b> Game<'a, 'b> {
 
     fn render(&mut self) {
         self.canvas.clear();
+        ecs::display(&self.world, &mut self.canvas);
         self.canvas.present();
     }
 }
