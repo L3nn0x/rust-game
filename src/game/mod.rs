@@ -12,7 +12,9 @@ pub struct Game<'a, 'b> {
     canvas: sdl2::render::WindowCanvas,
     is_open: bool,
     world: specs::World,
-    dispatcher: specs::Dispatcher<'a, 'b>
+    dispatcher: specs::Dispatcher<'a, 'b>,
+    commands: VecDeque<ecs::Commands::Command>,
+    player: ecs::Player
 }
 
 impl<'a, 'b> Game<'a, 'b> {
@@ -31,7 +33,7 @@ impl<'a, 'b> Game<'a, 'b> {
 
         let mut world = ecs::build_world();
 
-        let _player = ecs::create_player(&mut world);
+        let player = ecs::create_player(&mut world);
 
         world.maintain();
 
@@ -40,7 +42,9 @@ impl<'a, 'b> Game<'a, 'b> {
             canvas: canvas,
             is_open: true,
             world: world,
-            dispatcher: ecs::build_dispatcher()
+            dispatcher: ecs::build_dispatcher(),
+            commands: VecDeque::new(),
+            player: player
         }
     }
 
@@ -76,15 +80,22 @@ impl<'a, 'b> Game<'a, 'b> {
     fn handle_player_input(&mut self, key: sdl2::keyboard::Keycode, _pressed: bool) {
         use self::sdl2::keyboard::Keycode;
         match key {
-            Keycode::Z => {},
-            Keycode::Q => {},
-            Keycode::S => {},
-            Keycode::D => {},
+            Keycode::Z => self.commands.push_back(|| ecs::Commands::move_up(&self.player)),
+            Keycode::Q => self.commands.push_back(|| ecs::Commands::move_left(&self.player)),
+            Keycode::S => self.commands.push_back(|| ecs::Commands::move_down(&self.player)),
+            Keycode::D => self.commands.push_back(|| ecs::Commands::move_right(&self.player)),
             _ => {}
+        }
+    }
+    
+    fn process_commands(&mut self) {
+        for command in self.commands.drain(..) {
+            command();
         }
     }
 
     fn update(&mut self, delta: u64) {
+        self.process_commands();
         {
             let mut d = self.world.write_resource::<ecs::DeltaTime>();
             *d = ecs::DeltaTime(delta);
