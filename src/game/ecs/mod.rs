@@ -10,6 +10,8 @@ use self::specs::{World, DispatcherBuilder, Dispatcher};
 
 pub struct DeltaTime(pub u64);
 
+pub type Command = fn(specs::Entity);
+
 pub fn build_world() -> World {
     let mut world = World::new();
     world.register::<Position>();
